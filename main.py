@@ -30,9 +30,6 @@ for three_hour_data in weather_slice:
 
 if will_rain:
 
-    my_email = "pythontesting0032@gmail.com"
-    password = "rowxuvkbrjchmign"
-
     with smtplib.SMTP("smtp.gmail.com") as connection:
         connection.starttls()
         connection.login(user=my_email, password=password)
@@ -48,9 +45,6 @@ if will_rain:
 # To run in pythonanywhere
 # from twilio.http.http_client import TwilioHttpClient
 # import os
-
-# account_sid = "ACc3ca1785171fd3ff27a63d815533f7f6"
-# auth_token = "f683bb2b7cabdaffc268fbaf5a4d64b5"
 
 # if will_rain:
     # # To run in pythonanywhere
