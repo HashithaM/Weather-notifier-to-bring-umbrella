@@ -1,63 +1,48 @@
-import requests
+import os
 import smtplib
 
-OWM_Endpoint = "https://api.openweathermap.org/data/2.5/forecast"
-API_KEY = ""
+import requests
 
-weather_params = {
-    "lat": 6.9319,
-    "lon": 79.8478,
-    "appid": API_KEY,
-}
 
-response = requests.get(url=OWM_Endpoint, params=weather_params)
+OPENWEATHER_ENDPOINT = "https://api.openweathermap.org/data/2.5/forecast"
 
-# print(response.status_code)
-response.raise_for_status()
-weather_data = response.json()
 
-# print(weather_data)
+def required_env(name):
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
 
-will_rain = False
 
-weather_slice = weather_data["list"][:8]
-# print(weather_slice)
-for three_hour_data in weather_slice:
-    condition_code = three_hour_data["weather"][0]["id"]
-    print(condition_code)
-    if int(condition_code) < 700:
-        will_rain = True
+def main():
+    api_key = required_env("OPENWEATHER_API_KEY")
+    latitude = float(required_env("WEATHER_LATITUDE"))
+    longitude = float(required_env("WEATHER_LONGITUDE"))
+    smtp_user = required_env("SMTP_USER")
+    smtp_password = required_env("SMTP_PASSWORD")
+    notification_recipient = required_env("NOTIFICATION_RECIPIENT")
 
-if will_rain:
+    weather_params = {
+        "lat": latitude,
+        "lon": longitude,
+        "appid": api_key,
+    }
+    response = requests.get(url=OPENWEATHER_ENDPOINT, params=weather_params, timeout=30)
+    response.raise_for_status()
+    weather_slice = response.json()["list"][:8]
+    will_rain = any(int(period["weather"][0]["id"]) < 700 for period in weather_slice)
 
-    with smtplib.SMTP("smtp.gmail.com") as connection:
-        connection.starttls()
-        connection.login(user=my_email, password=password)
-        connection.sendmail(from_addr=my_email,
-                            to_addrs="kanthiwijesinghe71@gmail.com",
-                            msg="subject:Take an Umbrella\n\n"
-                                "It is going to rain in 24 hours.Take the umbrella with you.")
-        connection.close()
+    if will_rain:
+        with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+            connection.starttls()
+            connection.login(user=smtp_user, password=smtp_password)
+            connection.sendmail(
+                from_addr=smtp_user,
+                to_addrs=notification_recipient,
+                msg=("Subject: Take an Umbrella\n\n"
+                     "It is going to rain in the next 24 hours. Take an umbrella with you."),
+            )
 
-# Send SMS using twilio
 
-# from twilio.rest import Client
-# To run in pythonanywhere
-# from twilio.http.http_client import TwilioHttpClient
-# import os
-
-# if will_rain:
-    # # To run in pythonanywhere
-    # proxy_client = TwilioHttpClient()
-    # proxy_client.session.proxies = {"http": os.environ["https_proxy"]}
-    # client = Client(account_sid, auth_token, http_client=proxy_client)
-
-    # client = Client(account_sid, auth_token)
-    # message = client.messages.create(
-    #     body="It's going to rain today. Remember to bring an umbrella.",
-    #     from="564235645684",
-    #     to="+9471087511"
-    # )
-    # print(message.sid)
-    # print(message.status)
-
+if __name__ == "__main__":
+    main()

@@ -1,13 +1,12 @@
 # Rain and Umbrella Notifier
 
-A Python automation exercise that checks the next 24 hours of OpenWeatherMap forecast data and sends an email when rain is expected. Commented code also sketches an optional Twilio SMS flow.
+A Python automation exercise that checks the next 24 hours of OpenWeatherMap forecast data and sends an email when rain is expected.
 
 ## Workflow
 
 - Request eight three-hour forecast periods
 - Inspect weather condition IDs for rain
 - Send an umbrella reminder through Gmail SMTP
-- Optionally adapt the Twilio example for SMS notifications
 
 ## Requirements
 
@@ -17,13 +16,20 @@ pip install requests
 
 ## Configuration and privacy
 
-The current script has an empty weather API key and references undefined email credentials. Refactor it to read the API key, sender address, SMTP credential, and recipient from environment variables or a secret manager.
+The script reads all sensitive and personal configuration from required environment variables:
 
-Personal-looking recipient addresses, phone numbers, and precise coordinates are present in the source. Replace them with approved configuration or obvious placeholders before publishing or running the project. Never commit API keys, passwords, or Twilio tokens.
+- `OPENWEATHER_API_KEY`
+- `WEATHER_LATITUDE`
+- `WEATHER_LONGITUDE`
+- `SMTP_USER`
+- `SMTP_PASSWORD`
+- `NOTIFICATION_RECIPIENT`
+
+`.env.example` contains only obvious dummy values. Keep real coordinates, addresses, and credentials in a private environment or secret manager; `.env` is ignored by Git.
 
 ## Run
 
-After safe configuration:
+After configuring the required environment variables:
 
 ```bash
 python main.py
